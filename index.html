@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simon Says Game</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #111;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2 {
+      margin-top: 30px;
+    }
+
+    .hidden { display: none; }
+
+    .btn {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+    }
+
+    #home, #howToPlay, #game, #gameOver {
+      padding: 20px;
+    }
+
+    .color-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .color {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      opacity: 0.85;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .active {
+      opacity: 1 !important;
+      box-shadow: 0 0 20px white;
+      transform: scale(1.1);
+    }
+
+    .clicked {
+      box-shadow: 0 0 10px white;
+      transform: scale(0.95);
+    }
+
+    .red { background-color: red; }
+    .green { background-color: green; }
+    .blue { background-color: blue; }
+    .yellow { background-color: gold; }
+    .purple { background-color: purple; }
+    .cyan { background-color: cyan; }
+
+    #status {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Home Page -->
+  <div id="home">
+    <h1>🎮 Simon Says</h1>
+    <button class="btn" onclick="startGame()">Start Game</button>
+    <button class="btn" onclick="showPage('howToPlay')">How to Play</button>
+  </div>
+
+  <!-- How to Play Page -->
+  <div id="howToPlay" class="hidden">
+    <h2>How to Play</h2>
+    <p>Watch the color pattern carefully.<br/>
+    Repeat the same pattern by clicking the buttons.<br/>
+    Each round adds one more color.<br/>
+    Make a mistake and it's Game Over!</p>
+    <button class="btn" onclick="showPage('home')">⬅ Back</button>
+  </div>
+
+  <!-- Game Page -->
+  <div id="game" class="hidden">
+    <h2>Memorize the Pattern</h2>
+    <div class="color-buttons" id="buttonsContainer">
+      <div class="color red" id="red" onclick="handleUserClick('red')"></div>
+      <div class="color green" id="green" onclick="handleUserClick('green')"></div>
+      <div class="color blue" id="blue" onclick="handleUserClick('blue')"></div>
+      <div class="color yellow" id="yellow" onclick="handleUserClick('yellow')"></div>
+      <div class="color purple" id="purple" onclick="handleUserClick('purple')"></div>
+      <div class="color cyan" id="cyan" onclick="handleUserClick('cyan')"></div>
+    </div>
+    <div id="status">Click a color to begin...</div>
+  </div>
+
+  <!-- Game Over Page -->
+  <div id="gameOver" class="hidden">
+    <h2>❌ Game Over!</h2>
+    <p>Oops! Wrong color. Try again?</p>
+    <button class="btn" onclick="startGame()">🔁 Restart</button>
+    <button class="btn" onclick="showPage('home')">⬅ Back to Home</button>
+  </div>
+
+  <script>
+    const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan'];
+    let gamePattern = [];
+    let userPattern = [];
+    let level = 0;
+    let acceptingInput = false;
+
+    function showPage(pageId) {
+      document.querySelectorAll('#home, #howToPlay, #game, #gameOver').forEach(div => {
+        div.classList.add('hidden');
+      });
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    function startGame() {
+      showPage('game');
+      gamePattern = [];
+      userPattern = [];
+      level = 0;
+      nextSequence();
+    }
+
+    function nextSequence() {
+      userPattern = [];
+      level++;
+      document.getElementById('status').innerText = `Level ${level}`;
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      gamePattern.push(randomColor);
+
+      let i = 0;
+      acceptingInput = false;
+
+      const interval = setInterval(() => {
+        flashColor(gamePattern[i]);
+        i++;
+        if (i >= gamePattern.length) {
+          clearInterval(interval);
+          acceptingInput = true;
+        }
+      }, 600);
+    }
+
+    function flashColor(color) {
+      const btn = document.getElementById(color);
+      btn.classList.add('active');
+      setTimeout(() => btn.classList.remove('active'), 300);
+    }
+
+    function handleUserClick(color) {
+      if (!acceptingInput) return;
+
+      userPattern.push(color);
+      const btn = document.getElementById(color);
+      btn.classList.add('clicked');
+      setTimeout(() => btn.classList.remove('clicked'), 150);
+
+      const currentStep = userPattern.length - 1;
+      if (userPattern[currentStep] !== gamePattern[currentStep]) {
+        showPage('gameOver');
+        return;
+      }
+
+      if (userPattern.length === gamePattern.length) {
+        setTimeout(nextSequence, 1000);
+      }
+    }
+  </script>
+</body>
+</html>
